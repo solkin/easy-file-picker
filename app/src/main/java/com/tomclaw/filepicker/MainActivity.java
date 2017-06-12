@@ -9,8 +9,6 @@ import android.view.View;
 
 import com.greysonparrelli.permiso.Permiso;
 
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity {
 
     private static final int PICK_FILE_REQUEST = 0x100;
@@ -23,6 +21,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 pickFile();
+            }
+        });
+        findViewById(R.id.choose_file).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                chooseFile();
             }
         });
         Permiso.getInstance().setActivity(this);
@@ -46,6 +50,23 @@ public class MainActivity extends AppCompatActivity {
             public void onPermissionResult(Permiso.ResultSet resultSet) {
                 if (resultSet.isPermissionGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     Intent intent = new Intent(MainActivity.this, FilePickerActivity.class);
+                    startActivityForResult(intent, PICK_FILE_REQUEST);
+                }
+            }
+
+            @Override
+            public void onRationaleRequested(Permiso.IOnRationaleProvided callback, String... permissions) {
+                Permiso.getInstance().showRationaleInDialog("Title", "Message", null, callback);
+            }
+        }, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    }
+
+    private void chooseFile() {
+        Permiso.getInstance().requestPermissions(new Permiso.IOnPermissionResult() {
+            @Override
+            public void onPermissionResult(Permiso.ResultSet resultSet) {
+                if (resultSet.isPermissionGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    Intent intent = new Intent(MainActivity.this, FileChooserActivity.class);
                     startActivityForResult(intent, PICK_FILE_REQUEST);
                 }
             }

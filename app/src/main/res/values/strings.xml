@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">FilePicker</string>
     <string name="pick_pile">Pick File</string>
+    <string name="choose_pile">Choose File</string>
     <string name="select_file">Select File</string>
+    <string name="sources_list">Sources</string>
     <string name="free_of_total">Free %1$s of %2$s</string>
     <string name="unknown_error">Unknown error</string>
     <string name="access_error">Access error</string>
@@ -17,6 +19,12 @@
     <string name="kibibytes">%.1f KB</string>
     <string name="mibibytes">%.1f MB</string>
     <string name="gigibytes">%.1f GB</string>
-    <string name="system_picker">Select file in another picker</string>
+    <string name="system_picker">External</string>
     <string name="got_it">Got it</string>
+    <string name="title_activity_file_chooser">FileChooserActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
 </resources>

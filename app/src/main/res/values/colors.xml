@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary_color">#3F51B5</color>
-    <color name="primary_dark_color">#303F9F</color>
-    <color name="accent_color">#FF4081</color>
+    <color name="primary_color">#E62163</color>
+    <color name="primary_dark_color">#C2185B</color>
+    <color name="accent_color">#00BFA5</color>
+    <color name="nav_header_text_color">#87000000</color>
 </resources>
