@@ -1,12 +1,19 @@
 package com.tomclaw.filepicker;
 
 import android.content.Intent;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.UiThread;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.view.menu.MenuItemImpl;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.ContextMenu;
+import android.view.SubMenu;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -20,14 +27,25 @@ import android.view.MenuItem;
 import com.tomclaw.filepicker.files.FileAdapter;
 import com.tomclaw.filepicker.files.FileItem;
 import com.tomclaw.filepicker.util.AppsMenuHelper;
+import com.tomclaw.filepicker.util.DirScanner;
+import com.tomclaw.filepicker.util.FileHelper;
+import com.tomclaw.filepicker.util.MainExecutor;
+import com.tomclaw.filepicker.util.StringUtil;
+import com.tomclaw.filepicker.util.TimeHelper;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 public class FileChooserActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final int PICK_FILE_RESULT_CODE = 4;
+
+    private TimeHelper timeHelper = new TimeHelper(this);
 
     private RecyclerView recyclerView;
     private FileAdapter fileAdapter;
@@ -49,19 +67,113 @@ public class FileChooserActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         Toolbar navHeaderToolbar = (Toolbar) navigationView.getHeaderView(0).findViewById(R.id.nav_header_toolbar);
         navHeaderToolbar.setTitle(R.string.sources_list);
-        Menu menu = navigationView.getMenu();
+        final Menu menu = navigationView.getMenu();
         navigationView.setItemIconTintList(null);
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        AppsMenuHelper.fillMenuItemSubmenu(FileChooserActivity.this, menu, R.id.external_sources, intent, PICK_FILE_RESULT_CODE);
+        Set<String> points = FileHelper.getExternalMounts();
+        int i = 0;
+        menu.add(1, i, i++, getString(R.string.recent))
+                .setIcon(R.drawable.history)
+                .setOnMenuItemClickListener(new GroupMenuListener(menu));
+        menu.add(1, i, i++, getString(R.string.internal_storage))
+                .setIcon(R.drawable.cellphone_android)
+                .setOnMenuItemClickListener(new GroupMenuListener(menu));
+        points.add("");
+        for (String point : points) {
+            menu.add(1, i, i++, getString(R.string.external_storage))
+                    .setIcon(R.drawable.sd)
+                    .setOnMenuItemClickListener(new GroupMenuListener(menu));
+        }
+        menu.setGroupCheckable(1, true, true);
+        menu.add(2, i, i++, getString(R.string.camera))
+                .setIcon(R.drawable.camera)
+                .setOnMenuItemClickListener(new GroupMenuListener(menu));
+        menu.add(2, i, i++, getString(R.string.pictures))
+                .setIcon(R.drawable.image)
+                .setOnMenuItemClickListener(new GroupMenuListener(menu));
+        menu.add(2, i, i++, getString(R.string.music))
+                .setIcon(R.drawable.music)
+                .setOnMenuItemClickListener(new GroupMenuListener(menu));
+        menu.add(2, i, i++, getString(R.string.video))
+                .setIcon(R.drawable.video)
+                .setOnMenuItemClickListener(new GroupMenuListener(menu));
+        menu.add(2, i, i++, getString(R.string.documents))
+                .setIcon(R.drawable.file_document)
+                .setOnMenuItemClickListener(new GroupMenuListener(menu));
+        menu.add(2, i, i++, getString(R.string.downloads))
+                .setIcon(R.drawable.download)
+                .setOnMenuItemClickListener(new GroupMenuListener(menu));
+        menu.setGroupCheckable(2, true, true);
+        AppsMenuHelper.fillMenuItemMenu(FileChooserActivity.this, menu, i, intent, PICK_FILE_RESULT_CODE);
 
         fileAdapter = new FileAdapter(this);
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         recyclerView.setAdapter(fileAdapter);
 
-        fileAdapter.setFileItems(Arrays.asList(new FileItem("Title", "Apk", R.drawable.files_apk, "path"), new FileItem("Title", "Image", R.drawable.files_img, "path")));
+        File[] dirsArray = Environment.getExternalStorageDirectory().listFiles();
+        List<File> dirs = new ArrayList<>();
+        for (File file : dirsArray) {
+            if (file.isDirectory()) {
+                String name = file.getName();
+                if (file.isHidden() || name.equals("Android")) {
+                    continue;
+                }
+                dirs.add(file);
+            }
+        }
+        DirScanner dirScanner = new DirScanner(5);
+        dirScanner.scan(new DirScanner.Callback() {
+            @Override
+            public void onCompleted(List<File> dirs) {
+                final List<File> files = FileHelper.findRecentFiles(30, dirs);
+                MainExecutor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        setFiles(files);
+                    }
+                });
+            }
+        }, dirs.toArray(new File[dirs.size()]));
+    }
+
+    private class GroupMenuListener implements MenuItem.OnMenuItemClickListener {
+
+        private Menu menu;
+
+        public GroupMenuListener(Menu menu) {
+            this.menu = menu;
+        }
+
+        @Override
+        public boolean onMenuItemClick(MenuItem menuItem) {
+            for (int c = 0; c < menu.size(); c++) {
+                MenuItem item = menu.getItem(c);
+                if (item.isCheckable()) {
+                    item.getIcon().setColorFilter(new PorterDuffColorFilter(getResources().getColor(R.color.grey), PorterDuff.Mode.SRC_ATOP));
+                }
+            }
+            menuItem.getIcon().setColorFilter(new PorterDuffColorFilter(getResources().getColor(R.color.primary_color), PorterDuff.Mode.SRC_ATOP));
+            return false;
+        }
+    }
+
+    private void setFiles(List<File> files) {
+        List<FileItem> items = new ArrayList<>();
+        for (File file : files) {
+            String path = file.getAbsolutePath();
+            String mimeType = FileHelper.getMimeType(path);
+            String title = file.getName();
+            String info = String.format("%s, %s",
+                    StringUtil.formatBytes(getResources(), file.length()),
+                    timeHelper.getFormattedDate(file.lastModified()));
+            int icon = FileHelper.getMimeTypeResPicture(mimeType);
+            items.add(new FileItem(title, info, icon, path));
+        }
+        fileAdapter.setFileItems(items);
+        fileAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -101,15 +213,17 @@ public class FileChooserActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+//        if (id == R.id.nav_camera) {
+//            // Handle the camera action
+//        } else if (id == R.id.nav_gallery) {
+//
+//        } else if (id == R.id.nav_slideshow) {
+//
+//        } else if (id == R.id.nav_manage) {
+//
+//        }
 
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        }
+        Log.d("~@~", "menu clicked: " + id);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

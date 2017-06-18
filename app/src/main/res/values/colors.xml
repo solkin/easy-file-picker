@@ -4,4 +4,5 @@
     <color name="primary_dark_color">#C2185B</color>
     <color name="accent_color">#00BFA5</color>
     <color name="nav_header_text_color">#87000000</color>
+    <color name="grey">#707070</color>
 </resources>

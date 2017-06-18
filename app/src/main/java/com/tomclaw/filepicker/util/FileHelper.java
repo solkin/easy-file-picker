@@ -1,9 +1,22 @@
 package com.tomclaw.filepicker.util;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import com.tomclaw.filepicker.R;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by Solkin on 18.10.2014.
@@ -65,5 +78,57 @@ public class FileHelper {
             }
         }
         return suffix;
+    }
+
+    public static List<File> findRecentFiles(int limit, List<File> dirs) {
+        List<File> files = new ArrayList<>();
+        for (File dir : dirs) {
+            File[] filesList = dir.listFiles();
+            for (File file : filesList) {
+                if (file.isFile() && !file.isHidden()) {
+                    files.add(file);
+                }
+            }
+        }
+        Collections.sort(files, new LastModifiedComparator());
+        return files.subList(0, limit);
+    }
+
+    public static HashSet<String> getExternalMounts() {
+        final HashSet<String> out = new HashSet<String>();
+        String reg = "(?i).*vold.*(vfat|ntfs|exfat|fat32|ext3|ext4).*rw.*";
+        BufferedReader is = null;
+        try {
+            final Process process = new ProcessBuilder().command("mount")
+                    .redirectErrorStream(true).start();
+            process.waitFor();
+            is = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = is.readLine()) != null) {
+                if (!line.toLowerCase(Locale.US).contains("asec")) {
+                    if (line.matches(reg)) {
+                        String[] parts = line.split(" ");
+                        for (String part : parts) {
+                            if (part.startsWith("/")) {
+                                if (!part.toLowerCase(Locale.US).contains("vold")) {
+                                    out.add(part);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            is.close();
+        } catch (final Exception ex) {
+            Log.d("mounts scanner", ex.toString());
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+        return out;
     }
 }

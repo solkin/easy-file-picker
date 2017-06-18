@@ -26,6 +26,10 @@ public class AppsMenuHelper {
         // Find specified menu id in menu and clear its submenu.
         SubMenu subMenu = menu.findItem(menuId).getSubMenu();
         subMenu.clear();
+        fillMenuItemMenu(activity, subMenu, 0, intent, requestCode);
+    }
+
+    public static void fillMenuItemMenu(AppCompatActivity activity, Menu menu, int index, Intent intent, int requestCode) {
         // Obtain list of packages for specified intent.
         PackageManager packageManager = activity.getPackageManager();
         List<ResolveInfo> resolveInfoList = packageManager
@@ -34,13 +38,12 @@ public class AppsMenuHelper {
         MenuItem.OnMenuItemClickListener onMenuItemClickListener =
                 new ShareMenuItemClickListener(activity, resolveInfoList, intent, requestCode);
         // Fill menu item with submenu elements with app name and icon.
-        int i = 0;
         for (ResolveInfo resolveInfo : resolveInfoList) {
             try {
-                subMenu.add(0, i, i, resolveInfo.loadLabel(packageManager))
+                menu.add(requestCode, index, index, resolveInfo.loadLabel(packageManager))
                         .setIcon(resolveInfo.loadIcon(packageManager))
                         .setOnMenuItemClickListener(onMenuItemClickListener);
-                i++;
+                index++;
             } catch (Throwable ignored) {
                 // Bad package.
             }

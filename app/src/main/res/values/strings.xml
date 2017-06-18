@@ -22,6 +22,13 @@
     <string name="system_picker">External</string>
     <string name="got_it">Got it</string>
     <string name="title_activity_file_chooser">FileChooserActivity</string>
+    <string name="recent">Recent</string>
+    <string name="pictures">Pictures</string>
+    <string name="camera">Camera</string>
+    <string name="music">Music</string>
+    <string name="video">Video</string>
+    <string name="documents">Documents</string>
+    <string name="downloads">Downloads</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
