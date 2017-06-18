@@ -69,23 +69,23 @@ public class FileChooserActivity extends AppCompatActivity
         navHeaderToolbar.setTitle(R.string.sources_list);
         final Menu menu = navigationView.getMenu();
         navigationView.setItemIconTintList(null);
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("*/*");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        Set<String> points = FileHelper.getExternalMounts();
         int i = 0;
-        menu.add(1, i, i++, getString(R.string.recent))
+        MenuItem recent = menu.add(1, i, i++, getString(R.string.recent))
                 .setIcon(R.drawable.history)
-                .setOnMenuItemClickListener(new GroupMenuListener(menu));
+                .setOnMenuItemClickListener(new GroupMenuListener(menu))
+                .setChecked(true);
+        recent.getIcon().setColorFilter(new PorterDuffColorFilter(getResources().getColor(R.color.primary_color), PorterDuff.Mode.SRC_ATOP));
         menu.add(1, i, i++, getString(R.string.internal_storage))
                 .setIcon(R.drawable.cellphone_android)
                 .setOnMenuItemClickListener(new GroupMenuListener(menu));
-        points.add("");
-        for (String point : points) {
+
+        Set<String> points = FileHelper.getExternalMounts();
+        for (int c = 0; c < points.size(); c++) {
             menu.add(1, i, i++, getString(R.string.external_storage))
                     .setIcon(R.drawable.sd)
                     .setOnMenuItemClickListener(new GroupMenuListener(menu));
         }
+
         menu.setGroupCheckable(1, true, true);
         menu.add(2, i, i++, getString(R.string.camera))
                 .setIcon(R.drawable.camera)
@@ -106,6 +106,10 @@ public class FileChooserActivity extends AppCompatActivity
                 .setIcon(R.drawable.download)
                 .setOnMenuItemClickListener(new GroupMenuListener(menu));
         menu.setGroupCheckable(2, true, true);
+
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
         AppsMenuHelper.fillMenuItemMenu(FileChooserActivity.this, menu, i, intent, PICK_FILE_RESULT_CODE);
 
         fileAdapter = new FileAdapter(this);
@@ -113,17 +117,7 @@ public class FileChooserActivity extends AppCompatActivity
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         recyclerView.setAdapter(fileAdapter);
 
-        File[] dirsArray = Environment.getExternalStorageDirectory().listFiles();
-        List<File> dirs = new ArrayList<>();
-        for (File file : dirsArray) {
-            if (file.isDirectory()) {
-                String name = file.getName();
-                if (file.isHidden() || name.equals("Android")) {
-                    continue;
-                }
-                dirs.add(file);
-            }
-        }
+        List<File> dirs = FileHelper.getExternalStorageDirs();
         DirScanner dirScanner = new DirScanner(5);
         dirScanner.scan(new DirScanner.Callback() {
             @Override

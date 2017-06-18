@@ -1,5 +1,6 @@
 package com.tomclaw.filepicker.util;
 
+import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
@@ -130,5 +131,20 @@ public class FileHelper {
             }
         }
         return out;
+    }
+
+    public static List<File> getExternalStorageDirs() {
+        List<File> dirs = new ArrayList<>();
+        File[] dirsArray = Environment.getExternalStorageDirectory().listFiles();
+        for (File file : dirsArray) {
+            if (file.isDirectory()) {
+                String name = file.getName();
+                if (file.isHidden() || name.equals("Android")) {
+                    continue;
+                }
+                dirs.add(file);
+            }
+        }
+        return dirs;
     }
 }

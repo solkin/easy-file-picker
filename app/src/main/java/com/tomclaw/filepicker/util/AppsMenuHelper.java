@@ -6,12 +6,14 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.support.v7.app.AppCompatActivity;
+import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Igor on 13.05.2015.
@@ -34,15 +36,17 @@ public class AppsMenuHelper {
         PackageManager packageManager = activity.getPackageManager();
         List<ResolveInfo> resolveInfoList = packageManager
                 .queryIntentActivities(intent, 0);
+        SparseArray<ResolveInfo> resolveInfoArray = new SparseArray<>();
         // Prepare click listener.
         MenuItem.OnMenuItemClickListener onMenuItemClickListener =
-                new ShareMenuItemClickListener(activity, resolveInfoList, intent, requestCode);
+                new ShareMenuItemClickListener(activity, resolveInfoArray, intent, requestCode);
         // Fill menu item with submenu elements with app name and icon.
         for (ResolveInfo resolveInfo : resolveInfoList) {
             try {
                 menu.add(requestCode, index, index, resolveInfo.loadLabel(packageManager))
                         .setIcon(resolveInfo.loadIcon(packageManager))
                         .setOnMenuItemClickListener(onMenuItemClickListener);
+                resolveInfoArray.put(index, resolveInfo);
                 index++;
             } catch (Throwable ignored) {
                 // Bad package.
@@ -57,12 +61,12 @@ public class AppsMenuHelper {
 
         private final int requestCode;
         private WeakReference<AppCompatActivity> weakActivity;
-        private final List<ResolveInfo> resolveInfoList;
+        private final SparseArray<ResolveInfo> resolveInfoArray;
         private final Intent intent;
 
-        public ShareMenuItemClickListener(AppCompatActivity activity, List<ResolveInfo> resolveInfoList, Intent intent, int requestCode) {
+        public ShareMenuItemClickListener(AppCompatActivity activity, SparseArray<ResolveInfo> resolveInfoArray, Intent intent, int requestCode) {
             this.weakActivity = new WeakReference<>(activity);
-            this.resolveInfoList = resolveInfoList;
+            this.resolveInfoArray = resolveInfoArray;
             this.intent = intent;
             this.requestCode = requestCode;
         }
@@ -71,7 +75,7 @@ public class AppsMenuHelper {
         public boolean onMenuItemClick(MenuItem item) {
             AppCompatActivity activity = weakActivity.get();
             if (activity != null && intent != null) {
-                ResolveInfo resolveInfo = resolveInfoList.get(item.getItemId());
+                ResolveInfo resolveInfo = resolveInfoArray.get(item.getItemId());
                 final ActivityInfo activityInfo = resolveInfo.activityInfo;
                 final ComponentName name = new ComponentName(activityInfo.applicationInfo.packageName, activityInfo.name);
                 intent.setComponent(name);
