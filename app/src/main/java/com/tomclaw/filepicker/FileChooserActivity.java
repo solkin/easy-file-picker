@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.ContextMenu;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -15,12 +17,20 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.tomclaw.filepicker.files.FileAdapter;
+import com.tomclaw.filepicker.files.FileItem;
 import com.tomclaw.filepicker.util.AppsMenuHelper;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 public class FileChooserActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final int PICK_FILE_RESULT_CODE = 4;
+
+    private RecyclerView recyclerView;
+    private FileAdapter fileAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,15 +38,6 @@ public class FileChooserActivity extends AppCompatActivity
         setContentView(R.layout.file_chooser_activity);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -54,6 +55,13 @@ public class FileChooserActivity extends AppCompatActivity
         intent.setType("*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         AppsMenuHelper.fillMenuItemSubmenu(FileChooserActivity.this, menu, R.id.external_sources, intent, PICK_FILE_RESULT_CODE);
+
+        fileAdapter = new FileAdapter(this);
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        recyclerView.setAdapter(fileAdapter);
+
+        fileAdapter.setFileItems(Arrays.asList(new FileItem("Title", "Apk", R.drawable.files_apk, "path"), new FileItem("Title", "Image", R.drawable.files_img, "path")));
     }
 
     @Override
