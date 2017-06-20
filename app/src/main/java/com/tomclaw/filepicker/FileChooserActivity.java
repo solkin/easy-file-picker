@@ -4,17 +4,9 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.annotation.UiThread;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.view.menu.MenuItemImpl;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.SubMenu;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -29,14 +21,14 @@ import com.tomclaw.filepicker.files.FileItem;
 import com.tomclaw.filepicker.util.AppsMenuHelper;
 import com.tomclaw.filepicker.util.DirScanner;
 import com.tomclaw.filepicker.util.FileHelper;
+import com.tomclaw.filepicker.util.GroupMenuListener;
 import com.tomclaw.filepicker.util.MainExecutor;
+import com.tomclaw.filepicker.util.MenuHelper;
 import com.tomclaw.filepicker.util.StringUtil;
 import com.tomclaw.filepicker.util.TimeHelper;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -69,48 +61,28 @@ public class FileChooserActivity extends AppCompatActivity
         navHeaderToolbar.setTitle(R.string.sources_list);
         final Menu menu = navigationView.getMenu();
         navigationView.setItemIconTintList(null);
-        int i = 0;
-        MenuItem recent = menu.add(1, i, i++, getString(R.string.recent))
-                .setIcon(R.drawable.history)
-                .setOnMenuItemClickListener(new GroupMenuListener(menu))
-                .setChecked(true);
-        recent.getIcon().setColorFilter(new PorterDuffColorFilter(getResources().getColor(R.color.primary_color), PorterDuff.Mode.SRC_ATOP));
-        menu.add(1, i, i++, getString(R.string.internal_storage))
-                .setIcon(R.drawable.cellphone_android)
-                .setOnMenuItemClickListener(new GroupMenuListener(menu));
 
+        MenuHelper menuHelper = new MenuHelper(getResources(), menu);
+        menuHelper.addMenuItem(1, R.string.recent, R.drawable.history, true);
+        menuHelper.addMenuItem(1, R.string.internal_storage, R.drawable.cellphone_android, false);
         Set<String> points = FileHelper.getExternalMounts();
         for (int c = 0; c < points.size(); c++) {
-            menu.add(1, i, i++, getString(R.string.external_storage))
-                    .setIcon(R.drawable.sd)
-                    .setOnMenuItemClickListener(new GroupMenuListener(menu));
+            menuHelper.addMenuItem(1, R.string.external_storage, R.drawable.sd, false);
         }
-
         menu.setGroupCheckable(1, true, true);
-        menu.add(2, i, i++, getString(R.string.camera))
-                .setIcon(R.drawable.camera)
-                .setOnMenuItemClickListener(new GroupMenuListener(menu));
-        menu.add(2, i, i++, getString(R.string.pictures))
-                .setIcon(R.drawable.image)
-                .setOnMenuItemClickListener(new GroupMenuListener(menu));
-        menu.add(2, i, i++, getString(R.string.music))
-                .setIcon(R.drawable.music)
-                .setOnMenuItemClickListener(new GroupMenuListener(menu));
-        menu.add(2, i, i++, getString(R.string.video))
-                .setIcon(R.drawable.video)
-                .setOnMenuItemClickListener(new GroupMenuListener(menu));
-        menu.add(2, i, i++, getString(R.string.documents))
-                .setIcon(R.drawable.file_document)
-                .setOnMenuItemClickListener(new GroupMenuListener(menu));
-        menu.add(2, i, i++, getString(R.string.downloads))
-                .setIcon(R.drawable.download)
-                .setOnMenuItemClickListener(new GroupMenuListener(menu));
+
+        menuHelper.addMenuItem(2, R.string.camera, R.drawable.camera, false);
+        menuHelper.addMenuItem(2, R.string.pictures, R.drawable.image, false);
+        menuHelper.addMenuItem(2, R.string.music, R.drawable.music, false);
+        menuHelper.addMenuItem(2, R.string.video, R.drawable.video, false);
+        menuHelper.addMenuItem(2, R.string.documents, R.drawable.file_document, false);
+        menuHelper.addMenuItem(2, R.string.downloads, R.drawable.download, false);
         menu.setGroupCheckable(2, true, true);
 
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        AppsMenuHelper.fillMenuItemMenu(FileChooserActivity.this, menu, i, intent, PICK_FILE_RESULT_CODE);
+        AppsMenuHelper.fillMenuItemMenu(this, menu, menuHelper.getIndex(), intent, PICK_FILE_RESULT_CODE);
 
         fileAdapter = new FileAdapter(this);
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -131,27 +103,6 @@ public class FileChooserActivity extends AppCompatActivity
                 });
             }
         }, dirs.toArray(new File[dirs.size()]));
-    }
-
-    private class GroupMenuListener implements MenuItem.OnMenuItemClickListener {
-
-        private Menu menu;
-
-        public GroupMenuListener(Menu menu) {
-            this.menu = menu;
-        }
-
-        @Override
-        public boolean onMenuItemClick(MenuItem menuItem) {
-            for (int c = 0; c < menu.size(); c++) {
-                MenuItem item = menu.getItem(c);
-                if (item.isCheckable()) {
-                    item.getIcon().setColorFilter(new PorterDuffColorFilter(getResources().getColor(R.color.grey), PorterDuff.Mode.SRC_ATOP));
-                }
-            }
-            menuItem.getIcon().setColorFilter(new PorterDuffColorFilter(getResources().getColor(R.color.primary_color), PorterDuff.Mode.SRC_ATOP));
-            return false;
-        }
     }
 
     private void setFiles(List<File> files) {
