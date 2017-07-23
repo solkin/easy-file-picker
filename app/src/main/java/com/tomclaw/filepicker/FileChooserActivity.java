@@ -1,18 +1,16 @@
 package com.tomclaw.filepicker;
 
 import android.content.Intent;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -21,7 +19,6 @@ import com.tomclaw.filepicker.files.FileItem;
 import com.tomclaw.filepicker.util.AppsMenuHelper;
 import com.tomclaw.filepicker.util.DirScanner;
 import com.tomclaw.filepicker.util.FileHelper;
-import com.tomclaw.filepicker.util.GroupMenuListener;
 import com.tomclaw.filepicker.util.MainExecutor;
 import com.tomclaw.filepicker.util.MenuHelper;
 import com.tomclaw.filepicker.util.StringUtil;

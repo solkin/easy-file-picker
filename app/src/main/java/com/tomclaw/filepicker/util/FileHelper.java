@@ -92,7 +92,10 @@ public class FileHelper {
             }
         }
         Collections.sort(files, new LastModifiedComparator());
-        return files.subList(0, limit);
+        if (files.size() > limit) {
+            files = files.subList(0, limit);
+        }
+        return files;
     }
 
     public static HashSet<String> getExternalMounts() {
