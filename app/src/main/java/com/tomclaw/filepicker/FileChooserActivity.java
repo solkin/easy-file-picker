@@ -37,6 +37,9 @@ public class FileChooserActivity extends AppCompatActivity
 
     private static final int PICK_FILE_RESULT_CODE = 4;
 
+    private static final int SCAN_THREADS_COUNT = 5;
+    private static final int RECENT_FILES_COUNT = 30;
+
     private TimeHelper timeHelper = new TimeHelper(this);
 
     private RecyclerView recyclerView;
@@ -63,21 +66,23 @@ public class FileChooserActivity extends AppCompatActivity
         navigationView.setItemIconTintList(null);
 
         MenuHelper menuHelper = new MenuHelper(getResources(), menu);
-        menuHelper.addMenuItem(1, R.string.recent, R.drawable.history, true);
-        menuHelper.addMenuItem(1, R.string.internal_storage, R.drawable.cellphone_android, false);
+        MenuItem recent = menuHelper.addMenuItem(1, R.string.recent, R.drawable.history);
+        menuHelper.addMenuItem(1, R.string.internal_storage, R.drawable.cellphone_android);
         Set<String> points = FileHelper.getExternalMounts();
         for (int c = 0; c < points.size(); c++) {
-            menuHelper.addMenuItem(1, R.string.external_storage, R.drawable.sd, false);
+            menuHelper.addMenuItem(1, R.string.external_storage, R.drawable.sd);
         }
         menu.setGroupCheckable(1, true, true);
 
-        menuHelper.addMenuItem(2, R.string.camera, R.drawable.camera, false);
-        menuHelper.addMenuItem(2, R.string.pictures, R.drawable.image, false);
-        menuHelper.addMenuItem(2, R.string.music, R.drawable.music, false);
-        menuHelper.addMenuItem(2, R.string.video, R.drawable.video, false);
-        menuHelper.addMenuItem(2, R.string.documents, R.drawable.file_document, false);
-        menuHelper.addMenuItem(2, R.string.downloads, R.drawable.download, false);
+        menuHelper.addMenuItem(2, R.string.camera, R.drawable.camera);
+        menuHelper.addMenuItem(2, R.string.pictures, R.drawable.image);
+        menuHelper.addMenuItem(2, R.string.music, R.drawable.music);
+        menuHelper.addMenuItem(2, R.string.video, R.drawable.video);
+        menuHelper.addMenuItem(2, R.string.documents, R.drawable.file_document);
+        menuHelper.addMenuItem(2, R.string.downloads, R.drawable.download);
         menu.setGroupCheckable(2, true, true);
+
+        menuHelper.markChecked(recent);
 
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
@@ -90,11 +95,11 @@ public class FileChooserActivity extends AppCompatActivity
         recyclerView.setAdapter(fileAdapter);
 
         List<File> dirs = FileHelper.getExternalStorageDirs();
-        DirScanner dirScanner = new DirScanner(5);
+        DirScanner dirScanner = new DirScanner(SCAN_THREADS_COUNT);
         dirScanner.scan(new DirScanner.Callback() {
             @Override
             public void onCompleted(List<File> dirs) {
-                final List<File> files = FileHelper.findRecentFiles(30, dirs);
+                final List<File> files = FileHelper.findRecentFiles(RECENT_FILES_COUNT, dirs);
                 MainExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -119,6 +124,7 @@ public class FileChooserActivity extends AppCompatActivity
         }
         fileAdapter.setFileItems(items);
         fileAdapter.notifyDataSetChanged();
+        recyclerView.setAdapter(fileAdapter);
     }
 
     @Override

@@ -28,19 +28,21 @@ public class MenuHelper {
         this.menu = menu;
     }
 
-    public void addMenuItem(int groupId, @StringRes int titleRes, @DrawableRes int iconRes, boolean isChecked) {
+    public MenuItem addMenuItem(int groupId, @StringRes int titleRes, @DrawableRes int iconRes) {
         GroupMenuListener listener = new GroupMenuListener(menu, inactiveColorFilter, activeColorFilter);
-        MenuItem recent = menu.add(groupId, index, index++, titleRes)
+        return menu.add(groupId, index, index++, titleRes)
                 .setIcon(iconRes)
-                .setOnMenuItemClickListener(listener)
-                .setChecked(isChecked);
-        if (isChecked) {
-            recent.getIcon().setColorFilter(inactiveColorFilter);
-        }
+                .setOnMenuItemClickListener(listener);
     }
 
     public int getIndex() {
         return index;
+    }
+
+    public void markChecked(MenuItem menuItem) {
+        menuItem.setCheckable(true);
+        menuItem.setChecked(true);
+        menuItem.getIcon().setColorFilter(activeColorFilter);
     }
 
     private static ColorFilter createColorFilter(Resources resources, @ColorRes int color) {
