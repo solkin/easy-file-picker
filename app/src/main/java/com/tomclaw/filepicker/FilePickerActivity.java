@@ -113,7 +113,7 @@ public class FilePickerActivity extends AppCompatActivity {
 
         setContentView(R.layout.file_picker_activity);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         actionBar = getSupportActionBar();
@@ -123,14 +123,14 @@ public class FilePickerActivity extends AppCompatActivity {
         }
 
         listAdapter = new ListAdapter(this);
-        emptyView = (TextView) findViewById(R.id.searchEmptyView);
+        emptyView = findViewById(R.id.searchEmptyView);
         emptyView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent event) {
                 return true;
             }
         });
-        listView = (ListView) findViewById(R.id.list_view);
+        listView = findViewById(R.id.list_view);
         listView.setEmptyView(emptyView);
         listView.setAdapter(listAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -475,7 +475,7 @@ public class FilePickerActivity extends AppCompatActivity {
             }
             ((TextView) view.findViewById(R.id.docs_item_title)).setText(item.title);
             ((TextView) view.findViewById(R.id.docs_item_info)).setText(item.subtitle);
-            ImageView imageView = (ImageView) view.findViewById(R.id.docs_item_thumb);
+            ImageView imageView = view.findViewById(R.id.docs_item_thumb);
             imageView.setImageResource(item.icon);
             imageView.setVisibility(View.VISIBLE);
             return view;

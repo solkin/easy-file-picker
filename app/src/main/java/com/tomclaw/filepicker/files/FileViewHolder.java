@@ -24,9 +24,9 @@ class FileViewHolder extends RecyclerView.ViewHolder {
         super(view);
         this.view = view;
         this.context = view.getContext();
-        thumb = (ImageView) view.findViewById(R.id.docs_item_thumb);
-        title = (TextView) view.findViewById(R.id.docs_item_title);
-        info = (TextView) view.findViewById(R.id.docs_item_info);
+        thumb = view.findViewById(R.id.docs_item_thumb);
+        title = view.findViewById(R.id.docs_item_title);
+        info = view.findViewById(R.id.docs_item_info);
     }
 
     public void bind(FileItem fileItem, OnItemClickListener listener) {
